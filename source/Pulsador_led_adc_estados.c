@@ -48,6 +48,7 @@
 #include "buffer/circular.h"
 #include "PIT/pit_api.h"
 #include "adc/adc_api.h"
+#include "utils/collections.h"
 
 /* TODO: insert other definitions and declarations here. */
 
@@ -65,6 +66,7 @@ char led_main=0;
 int led_delay=0;
 char adc_main=0;
 int resultado_adc;
+double voltage=0;
 
 void led_admin(void) {
 	char temp;
@@ -116,6 +118,10 @@ void adc_admin(void) {
 	case 1:
 		if (IsResult_adc()) {
 			resultado_adc = Read_adc_result();
+			double voltage = ((double) resultado_adc * 3.3) / 65535;
+			findMinVoltage(voltage);
+			findMaxVoltage(voltage);
+			calculateDeltaVoltage();
 			Reset_adc();
 			adc_main++;
 		}
