@@ -27,7 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+ 
 /**
  * @file    Pulsador_led_estados.c
  * @brief   Application entry point.
@@ -41,13 +41,13 @@
 #include "fsl_debug_console.h"
 /* TODO: insert other include files here. */
 
+
 #include "pulsador/pulsador_api.h"
 #include "pulsador2/pulsador_api.h"
 #include "led/led_api.h"
 #include "buffer/circular.h"
 #include "PIT/pit_api.h"
 #include "adc/adc_api.h"
-#include "utils/collections.h"
 
 /* TODO: insert other definitions and declarations here. */
 
@@ -55,43 +55,44 @@
  * @brief   Application entry point.
  */
 
+
 void APP(void);
 void led_admin(void);
 void adc_admin(void);
 
-char led_main = 0;
-int led_delay = 0;
-char adc_main = 0;
+
+char led_main=0;
+int led_delay=0;
+char adc_main=0;
 int resultado_adc;
-double voltage = 0;
 
 void led_admin(void) {
 	char temp;
-	switch (led_main) {
+	switch(led_main) {
 	case 0:
-		temp = read_buffer();
-		if (temp != (char) (-1)) {
-			led_main = 1;
-			led_delay = ((int) temp) * 10;
-			printf("%dON", temp);
+		temp=read_buffer();
+		if (temp!=(char)(-1)) {
+			led_main=1;
+			led_delay=((int)temp)*10;
+			printf("%dON",temp);
 		}
 		break;
 
 	case 1:
-		if ((Read_flag_pit(0) != 0)) {
+		if ((Read_flag_pit(0)!=0)) {
 			led_delay--;
-			if (led_delay == 0) {
-				led_main = 2;
-				led_delay = 50;
+			if (led_delay==0) {
+				led_main=2;
+				led_delay=50;
 				printf("-OFF");
 			}
 		}
 		break;
 	case 2:
-		if ((Read_flag_pit(0) != 0)) {
+		if ((Read_flag_pit(0)!=0)) {
 			led_delay--;
-			if (led_delay == 0) {
-				led_main = 0;
+			if (led_delay==0) {
+				led_main=0;
 				printf("-END\n");
 			}
 		}
@@ -99,13 +100,14 @@ void led_admin(void) {
 	}
 }
 
+
 void adc_admin(void) {
 	char temp;
-	switch (adc_main) {
+	switch(adc_main) {
 	case 0:
-		if (Read_flag_pit(0) != 0) {
-			temp = Convert_adc(0);
-			if (temp != -1) {
+		if (Read_flag_pit(0)!=0){
+			temp=Convert_adc(0);
+			if (temp!=-1) {
 				adc_main++;
 			}
 		}
@@ -114,39 +116,35 @@ void adc_admin(void) {
 	case 1:
 		if (IsResult_adc()) {
 			resultado_adc = Read_adc_result();
-			//printf("R->%i\n",resultado_adc);
-			voltage = ((double) resultado_adc * 3.3) / 65535;
-			findMinVoltage(voltage);
-			findMaxVoltage(voltage);
-			calculateDeltaVoltage();
 			Reset_adc();
 			adc_main++;
 		}
 		break;
 
 	case 2:
-		if (Read_flag_pit(0) != 0) {
-			resultado_adc = (resultado_adc >> 13) + 1;
-			adc_main = 0;
+		if (Read_flag_pit(0)!=0){
+			resultado_adc=(resultado_adc >> 13)+1;
+			adc_main=0;
 		}
 		break;
 	}
 }
 
+
 void APP(void) {
 	//static char cont=1;
-	if (Leer_evento_pulsador() == INICIO_PRESS) {   //FIN_PRESS es otra opcion
+	if (Leer_evento_pulsador()==INICIO_PRESS) {   //FIN_PRESS es otra opcion
 		Alternar_led();
 	}
 
-	if (Leer_pulsador2() == kPULSADOR2_PRESS) {
+	if (Leer_pulsador2()==kPULSADOR2_PRESS) {
 		Reset_pulsador2();
 		add_buffer(resultado_adc);
 		//cont++;
 		//if (cont==6) cont=1;
 	}
 
-	if (Read_flag_pit(0) != 0) {
+	if (Read_flag_pit(0)!=0) {
 		Clear_flag_pit(0);
 		//printf("P\n");
 	}
@@ -155,42 +153,47 @@ void APP(void) {
 
 }
 
+
+
+
 int main(void) {
 
-	/* Init board hardware. */
-	BOARD_InitBootPins();
-	BOARD_InitBootClocks();
-	BOARD_InitBootPeripherals();
-	/* Init FSL debug console. */
-	BOARD_InitDebugConsole();
+  	/* Init board hardware. */
+    BOARD_InitBootPins();
+    BOARD_InitBootClocks();
+    BOARD_InitBootPeripherals();
+  	/* Init FSL debug console. */
+    BOARD_InitDebugConsole();
 
-	PRINTF("Hello World\n");
+    PRINTF("Hello World\n");
 
-	Init_Led();
-	// Init_Pulsador();
-	Init_Pulsador2();
-	Init_pit();
-	Init_adc();
-	Start_adc();
-	Start_pit(0, 10);
 
-	for (;;) {
-		//PULSADOR_OPS();
-		ADC_OPS();
-		PIT_OPS();
-		PULSADOR_OPS2();
-		APP();
-		LED_OPS();
-	}
+    Init_Led();
+   // Init_Pulsador();
+    Init_Pulsador2();
+    Init_pit();
+    Init_adc();
+    Start_adc();
+    Start_pit(0, 10);
 
-	/* Force the counter to be placed into memory. */
-	volatile static int i = 0;
-	/* Enter an infinite loop, just incrementing a counter. */
-	while (1) {
-		i++;
-		/* 'Dummy' NOP to allow source level single stepping of
-		 tight while() loop */
-		__asm volatile ("nop");
-	}
-	return 0;
+    for(;;) {
+    	//PULSADOR_OPS();
+    	ADC_OPS();
+    	PIT_OPS();
+    	PULSADOR_OPS2();
+    	APP();
+    	LED_OPS();
+    }
+
+
+    /* Force the counter to be placed into memory. */
+    volatile static int i = 0 ;
+    /* Enter an infinite loop, just incrementing a counter. */
+    while(1) {
+        i++ ;
+        /* 'Dummy' NOP to allow source level single stepping of
+            tight while() loop */
+        __asm volatile ("nop");
+    }
+    return 0 ;
 }
